@@ -4,14 +4,21 @@ namespace CounterAPP
 {
     public class CounterApp : Architecture<CounterApp>
     {
+
+        public CounterApp()
+        {
+            UnityEngine.Debug.Log("CounterApp:CounterApp()");
+        }
         protected override void Init()
         {
             UnityEngine.Debug.Log("CounterApp:Init()");
-            RegisterModel<ICounterModel>(new CounterModel());
+
             //Register<ICounterModel>(new CounterModel());
-            Register<IStorage>(new PlayerPrefsStorage());
-         
-            
+            RegisterModel<ICounterModel>(new CounterModel());
+            RegisterUtility<IStorage>(new PlayerPrefsStorage());
+
+
+
         }
     }
 }

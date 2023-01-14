@@ -70,6 +70,7 @@ namespace CounterAPP
 
         public void Init()
         {
+            Debug.Log("CounterModel init");
             var storage = Architecture.GetUtility<IStorage>();
             Count.Value = storage.LoadInt("COUNTERR_COUNT", 0);
             //Count.OnValueChanged += OnValueChanged;

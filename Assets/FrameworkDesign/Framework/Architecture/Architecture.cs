@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,7 +7,25 @@ namespace FrameworkDesign
 {
     public interface IArchitecture
     {
+        /// <summary>
+        /// 注册model
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="instance"></param>
+        void RegisterModel<T>(T instance) where T : IModel;
+        /// <summary>
+        /// 获取工具
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         T GetUtility<T>() where T : class;
+
+        /// <summary>
+        /// 注册工具
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="instance"></param>
+        void RegisterUtility<T>(T instance);
     }
 
     public abstract class Architecture<T> : IArchitecture where T : Architecture<T>, new()
@@ -20,15 +39,24 @@ namespace FrameworkDesign
 
         private List<IModel> mModels = new List<IModel>();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public static Action<T> OnRegisterPatch = temp => { };
+
         static void MakeSureArchitecture()
         {
             Debug.Log(mArchitecture);
+            Debug.Log(mArchitecture==null);
             if (mArchitecture == null)
             {
                 mArchitecture = new T();
-                //架构初始化
-                mArchitecture.Init();
                 //模块初始化
+                mArchitecture.Init();
+                Debug.Log("AAAAAAAAAAAAAAAAAAA");
+                OnRegisterPatch?.Invoke(mArchitecture);
+
+                //模块内的model初始化
                 foreach (var item in mArchitecture.mModels)
                 {
                     item.Init();
@@ -50,11 +78,11 @@ namespace FrameworkDesign
             return mArchitecture.mContainer.Get<T>();
         }
 
-        public void Register<T>(T instance)
+        public static void Register<T>(T instance)
         {
             Debug.Log("Register: " + typeof(T));
             MakeSureArchitecture();
-            mContainer.Register<T>(instance);
+            mArchitecture.mContainer.Register<T>(instance);
         }
 
         /// <summary>
@@ -85,6 +113,11 @@ namespace FrameworkDesign
         {
             Debug.Log("GetUtility<T>():" + typeof(T));
             return mContainer.Get<T>();
+        }
+
+        public void RegisterUtility<T>(T instance)
+        {
+            mContainer.Register<T>(instance);
         }
     }
 }
