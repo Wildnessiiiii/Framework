@@ -8,11 +8,26 @@ namespace FrameworkDesign
     public interface IArchitecture
     {
         /// <summary>
+        /// 注册System
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="instance"></param>
+        void RegisterSystem<T>(T system) where T : ISystem;
+
+        /// <summary>
         /// 注册model
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="instance"></param>
-        void RegisterModel<T>(T instance) where T : IModel;
+        void RegisterModel<T>(T model) where T : IModel;
+
+        /// <summary>
+        /// 注册工具
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="instance"></param>
+        void RegisterUtility<T>(T utility);
+
         /// <summary>
         /// 获取工具
         /// </summary>
@@ -21,11 +36,11 @@ namespace FrameworkDesign
         T GetUtility<T>() where T : class;
 
         /// <summary>
-        /// 注册工具
+        /// 获取model
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="instance"></param>
-        void RegisterUtility<T>(T instance);
+        /// <returns></returns>
+        T GetModel<T>() where T : class,IModel;
     }
 
     public abstract class Architecture<T> : IArchitecture where T : Architecture<T>, new()
@@ -38,22 +53,30 @@ namespace FrameworkDesign
         private bool mInited = false;
 
         private List<IModel> mModels = new List<IModel>();
+        private List<ISystem> mSystems = new List<ISystem>();
 
-        /// <summary>
-        /// 
-        /// </summary>
         public static Action<T> OnRegisterPatch = temp => { };
+
+        public static IArchitecture Interface
+        {
+            get
+            {
+                if(mArchitecture==null)
+                {
+                    MakeSureArchitecture();
+                };
+
+                return mArchitecture;
+            }            
+        }
 
         static void MakeSureArchitecture()
         {
-            Debug.Log(mArchitecture);
-            Debug.Log(mArchitecture==null);
             if (mArchitecture == null)
             {
                 mArchitecture = new T();
                 //模块初始化
-                mArchitecture.Init();
-                Debug.Log("AAAAAAAAAAAAAAAAAAA");
+                mArchitecture.Init();                
                 OnRegisterPatch?.Invoke(mArchitecture);
 
                 //模块内的model初始化
@@ -61,11 +84,17 @@ namespace FrameworkDesign
                 {
                     item.Init();
                 }
-                Debug.Log("AAAAAAAAAAAAAAAAAAA");
                 mArchitecture.mModels.Clear();
+
+                //模块内的system初始化
+                foreach (var item in mArchitecture.mSystems)
+                {
+                    item.Init();
+                }
+                mArchitecture.mSystems.Clear();
+
                 mArchitecture.mInited = true;
-            }
-            Debug.Log(mArchitecture.mInited);
+            }            
         }
 
         protected abstract void Init();
@@ -74,13 +103,11 @@ namespace FrameworkDesign
         public static T Get<T>() where T : class
         {
             MakeSureArchitecture();
-            Debug.Log("Get<T>:" + typeof(T));
             return mArchitecture.mContainer.Get<T>();
         }
 
         public static void Register<T>(T instance)
         {
-            Debug.Log("Register: " + typeof(T));
             MakeSureArchitecture();
             mArchitecture.mContainer.Register<T>(instance);
         }
@@ -92,32 +119,49 @@ namespace FrameworkDesign
         /// <param name="model"></param>
         public void RegisterModel<T>(T model) where T : IModel
         {
-            Debug.Log("RegisterModel<T>:" + typeof(T));
             //model赋值
-            model.Architecture = this;
+            model.SetArchitecture(this);
             mContainer.Register<T>(model);
 
             if (!mInited)
-            {
-                Debug.Log("RegisterModel<T>:ADD()  " + typeof(T));
+            {               
                 mModels.Add(model);
             }
             else
-            {
-                Debug.Log("RegisterModel<T>:Init  ()  " + typeof(T));
+            {                
                 model.Init();
             }
         }
 
         public T GetUtility<T>() where T : class
         {
-            Debug.Log("GetUtility<T>():" + typeof(T));
             return mContainer.Get<T>();
         }
 
         public void RegisterUtility<T>(T instance)
         {
             mContainer.Register<T>(instance);
+        }
+
+        public void RegisterSystem<T>(T system) where T : ISystem
+        {
+            //System赋值
+            system.SetArchitecture(this);
+            mContainer.Register<T>(system);
+
+            if (!mInited)
+            {
+                mSystems.Add(system);
+            }
+            else
+            {
+                system.Init();
+            }
+        }
+
+        public T GetModel<T>() where T : class,IModel
+        {            
+            return mContainer.Get<T>();
         }
     }
 }

@@ -4,13 +4,13 @@ using UnityEngine.UI;
 
 namespace CounterAPP
 {
-    public class CounterViewController : MonoBehaviour
+    public class CounterViewController : MonoBehaviour,IController
     {
         private ICounterModel mCounterrModel;
 
         void Start()
         {
-            mCounterrModel = CounterApp.Get<ICounterModel>();
+            mCounterrModel = GetArchitecture().GetModel<ICounterModel>();
 
             mCounterrModel.Count.OnValueChanged += OnCountChanged;
             OnCountChanged(mCounterrModel.Count.Value);
@@ -43,6 +43,11 @@ namespace CounterAPP
         {
             transform.Find("CountText").GetComponent<Text>().text = newCount.ToString();
         }
+
+        public IArchitecture GetArchitecture()
+        {
+            return CounterApp.Interface;
+        }
     }
 
     public class OnCountChangeEvent : Event<OnCountChangeEvent>
@@ -55,23 +60,16 @@ namespace CounterAPP
         BindableProperty<int> Count { get; }
     }
 
-    public class CounterModel: ICounterModel
+    public class CounterModel:AbstractModel, ICounterModel
     {
-
-        public CounterModel()
-        {
-            
-        }
-
         public void OnVaueChanged(int value)
         {
             PlayerPrefs.SetInt("COUNTERR_COUNT", value);
         }
 
-        public void Init()
+        protected override void OnInit()
         {
-            Debug.Log("CounterModel init");
-            var storage = Architecture.GetUtility<IStorage>();
+            var storage = GetArchitecture().GetUtility<IStorage>();
             Count.Value = storage.LoadInt("COUNTERR_COUNT", 0);
             //Count.OnValueChanged += OnValueChanged;
             Count.OnValueChanged += count =>
@@ -84,6 +82,5 @@ namespace CounterAPP
         {             
             Value = 0 
         };
-        public IArchitecture Architecture { get; set; }
     }
 }
