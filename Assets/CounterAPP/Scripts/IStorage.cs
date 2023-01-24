@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
+using FrameworkDesign;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 namespace CounterAPP
 {
-    public interface IStorage
+    public interface IStorage :IUtility
     {
         void SaveInt(string key, int value);
         int LoadInt(string key, int value = 0);

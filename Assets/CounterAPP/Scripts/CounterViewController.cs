@@ -10,7 +10,7 @@ namespace CounterAPP
 
         void Start()
         {
-            mCounterrModel = GetArchitecture().GetModel<ICounterModel>();
+            mCounterrModel = this.GetModel<ICounterModel>();
 
             mCounterrModel.Count.OnValueChanged += OnCountChanged;
             OnCountChanged(mCounterrModel.Count.Value);
@@ -20,21 +20,20 @@ namespace CounterAPP
                 .onClick.AddListener(() =>
                 {
                     // 交互逻辑
-                    new AddCountCommand().Execute();
+                    this.SendCommand<AddCountCommand>();
                 });
 
             transform.Find("BtnSub").GetComponent<Button>()
                 .onClick.AddListener(() =>
                 {
                     // 交互逻辑
-                    new SubCountCommand().Execute();
+                    this.SendCommand<SubCountCommand>();
                 });
 
         }
 
         private void OnDestroy()
         {
-            //OnCountChangeEvent.UnRegisterEvent(OnCountChanged);
             mCounterrModel.Count.OnValueChanged -= OnCountChanged;
             mCounterrModel = null;
         }
@@ -44,13 +43,13 @@ namespace CounterAPP
             transform.Find("CountText").GetComponent<Text>().text = newCount.ToString();
         }
 
-        public IArchitecture GetArchitecture()
+        IArchitecture IBelongToArchitecture.GetArchitecture()
         {
             return CounterApp.Interface;
         }
     }
 
-    public class OnCountChangeEvent : Event<OnCountChangeEvent>
+    public class OnCountChangeEvent
     {
 
     }
@@ -69,7 +68,7 @@ namespace CounterAPP
 
         protected override void OnInit()
         {
-            var storage = GetArchitecture().GetUtility<IStorage>();
+            var storage = this.GetUtility<IStorage>();
             Count.Value = storage.LoadInt("COUNTERR_COUNT", 0);
             //Count.OnValueChanged += OnValueChanged;
             Count.OnValueChanged += count =>

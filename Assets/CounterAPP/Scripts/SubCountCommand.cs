@@ -2,11 +2,12 @@
 
 namespace CounterAPP
 {
-    public struct SubCountCommand : ICommand
+    public class SubCountCommand : AbstractCommand
     {
-        public void Execute()
+        protected override void OnExecute()
         {
-            CounterApp.Get<ICounterModel>().Count.Value--;
+            //CounterApp.Get<ICounterModel>().Count.Value++;
+            this.GetModel<ICounterModel>().Count.Value--;
         }
     }
 

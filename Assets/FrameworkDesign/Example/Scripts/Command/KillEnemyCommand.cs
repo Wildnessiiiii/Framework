@@ -4,16 +4,16 @@ using UnityEngine;
 
 namespace FrameworkDesign.Example
 {
-    public struct KillEnemyCommand : ICommand
+    public class KillEnemyCommand : AbstractCommand
     {
-        public void Execute()
+        protected override void OnExecute()
         {
-            var gameModel = PointGame.Get<IGameModel>();
+            var gameModel = this.GetModel<IGameModel>();
             gameModel.KillCount.Value++;
 
             if (gameModel.KillCount.Value == 9)
             {
-                GamePassEvent.Trigger();
+                this.SendEvent<GamePassEvent>();
             }
         }
     }

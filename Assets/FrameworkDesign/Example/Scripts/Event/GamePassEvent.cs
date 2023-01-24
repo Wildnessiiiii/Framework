@@ -1,6 +1,6 @@
 ﻿namespace FrameworkDesign.Example
 {
-    public class GamePassEvent :Event<GamePassEvent>
+    public class GamePassEvent
     {
         
     }

@@ -3,14 +3,15 @@ using UnityEngine;
 
 namespace FrameworkDesign.Example
 {
-    class  Game:MonoBehaviour
+    class  Game:MonoBehaviour,IController
     {
         private void Awake()
         {
-            GameStartEvent.RegisterEvent(OnGameStart);
+            this.RegisterEvent<GameStartEvent>(OnGameStart);
+            //GameStartEvent.RegisterEvent(OnGameStart);
         }
 
-        private void OnGameStart()
+        private void OnGameStart(GameStartEvent e)
         {
             transform.Find("Enemys").gameObject.SetActive(true);
         }
@@ -18,7 +19,12 @@ namespace FrameworkDesign.Example
 
         private void OnDestroy()
         {
-            GameStartEvent.UnRegisterEvent(OnGameStart);            
+            this.UnRegisterEvent<GameStartEvent>(OnGameStart);
+        }
+
+        public IArchitecture GetArchitecture()
+        {
+            return PointGame.Interface;
         }
     }
 }
